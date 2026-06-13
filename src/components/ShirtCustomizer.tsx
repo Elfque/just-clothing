@@ -5,10 +5,12 @@ import { COLORS, PATTERNS } from "../constants/data";
 import { paintPattern } from "../utils/pattern";
 import * as THREE from "three";
 import Slider from "./Slider";
+import CaptureHelper from "./CaptureHelper";
 
 const types = ["base", "pattern"];
 
 const ShirtCustomizer = () => {
+  const [captureFn, setCaptureFn] = useState(null);
   const [modelType, setModelType] = useState<"shirt" | "tshirt">("shirt");
   const [color, setColor] = useState(COLORS[8].hex);
   const [patternColor, setPatternColor] = useState(COLORS[4].hex);
@@ -48,10 +50,20 @@ const ShirtCustomizer = () => {
     return texture;
   }, [patternId, color, patternColor, patScale, patAngle, patOpacity]);
 
+  const handleSaveScreenshot = () => {
+    if (!captureFn) return;
+    const dataURL = captureFn();
+    const link = document.createElement("a");
+    link.download = `custom-garment-${Date.now()}.png`;
+    link.href = dataURL;
+    link.click();
+  };
+
   return (
     <div className="h-screen w-screen overflow-hidden grid grid-cols-4">
-      <div className="h-screen bg-[#0d0c10] col-span-3">
+      <div className="h-screen col-span-3 relative">
         <Canvas>
+          <CaptureHelper onCaptureReady={(fn) => setCaptureFn(() => fn)} />
           <MainShirt
             modelType={modelType}
             color={color}
@@ -60,6 +72,12 @@ const ShirtCustomizer = () => {
             trouserColor={trouserColor}
           />
         </Canvas>
+        <button
+          className="absolute bottom-4 right-4 z-30 text-white"
+          onClick={handleSaveScreenshot}
+        >
+          Take Screenshot
+        </button>
       </div>
 
       <div className="h-screen p-6 space-y-6 overflow-auto bg-[#15131b] text-[#e8e4dc] border-l border-white/5 shadow-2xl">
