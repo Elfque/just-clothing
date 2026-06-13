@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import MainShirt from "./MainShirt";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { COLORS, PATTERNS } from "../constants/data";
 import { paintPattern } from "../utils/pattern";
 import * as THREE from "three";
@@ -64,13 +64,15 @@ const ShirtCustomizer = () => {
       <div className="h-screen col-span-3 relative">
         <Canvas>
           <CaptureHelper onCaptureReady={(fn: any) => setCaptureFn(() => fn)} />
-          <MainShirt
-            modelType={modelType}
-            color={color}
-            roughness={roughness}
-            patternTex={patternTex}
-            trouserColor={trouserColor}
-          />
+          <Suspense>
+            <MainShirt
+              modelType={modelType}
+              color={color}
+              roughness={roughness}
+              patternTex={patternTex}
+              trouserColor={trouserColor}
+            />
+          </Suspense>
         </Canvas>
         <button
           className="absolute bottom-4 right-4 z-30 text-white"
