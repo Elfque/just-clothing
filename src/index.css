@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-gold: #c9a96e;
+}
+
+.title-label {
+  @apply text-xs tracking-[0.14em] uppercase text-[#6b6575] font-normal block mb-2.5;
+}
