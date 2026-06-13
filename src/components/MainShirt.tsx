@@ -6,7 +6,7 @@ interface MainShirtProps {
   modelType: "shirt" | "tshirt";
   color: string;
   roughness: number;
-  patternTex: THREE.CanvasTexture;
+  patternTex: any;
   trouserColor: string;
 }
 

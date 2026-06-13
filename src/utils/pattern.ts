@@ -1,5 +1,5 @@
 // Helper: shift color (lighten/darken)
-function shiftColor(hex, percent) {
+function shiftColor(hex: string, percent: number) {
   // Simple implementation: lighten/darken by percent (negative for darker)
   const c = parseInt(hex.slice(1), 16);
   const r = (c >> 16) & 0xff;
@@ -12,14 +12,14 @@ function shiftColor(hex, percent) {
 }
 
 export function paintPattern(
-  ctx,
-  sz,
-  pid,
-  base,
-  accent,
-  scale,
-  angle,
-  opacity,
+  ctx: CanvasRenderingContext2D,
+  sz: number,
+  pid: string,
+  base: string,
+  accent: string,
+  scale: number,
+  angle: number,
+  opacity: number,
 ) {
   ctx.clearRect(0, 0, sz, sz);
   ctx.fillStyle = base;
@@ -561,7 +561,7 @@ export function paintPattern(
     }
   } else if (pid === "camo") {
     // Improved camo with more varied blobs
-    const rng = (seed) => {
+    const rng = (seed: any) => {
       let x = Math.sin(seed) * 10000;
       return x - Math.floor(x);
     };

@@ -6,6 +6,8 @@ import { paintPattern } from "../utils/pattern";
 import * as THREE from "three";
 import Slider from "./Slider";
 
+const types = ["base", "pattern"];
+
 const ShirtCustomizer = () => {
   const [modelType, setModelType] = useState<"shirt" | "tshirt">("shirt");
   const [color, setColor] = useState(COLORS[8].hex);
@@ -15,7 +17,7 @@ const ShirtCustomizer = () => {
   const [patScale, setPatScale] = useState(1);
   const [patAngle, setPatAngle] = useState(0);
   const [patOpacity, setPatOpacity] = useState(100);
-  const [colorTarget, setColorTarget] = useState<"base" | "pattern">("base");
+  const [colorTarget, setColorTarget] = useState<string>("base");
   const [trouserColor, setTrouserColor] = useState(COLORS[0].hex);
 
   const patternTex = useMemo(() => {
@@ -23,6 +25,7 @@ const ShirtCustomizer = () => {
     canvas.width = 1024;
     canvas.height = 1024;
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
     if (!patternId || patternId === "none") {
       ctx.fillStyle = color;
       ctx.fillRect(0, 0, 1024, 1024);
@@ -138,7 +141,7 @@ const ShirtCustomizer = () => {
         </section>
 
         <div className="flex gap-6 mb-6">
-          {["base", "pattern"].map((t: "base" | "pattern") => (
+          {types.map((t: string) => (
             <button
               key={t}
               onClick={() => setColorTarget(t)}
@@ -161,6 +164,7 @@ const ShirtCustomizer = () => {
             </button>
           ))}
         </div>
+
         <div className="grid grid-cols-6 gap-2">
           {COLORS.map((c) => (
             <button

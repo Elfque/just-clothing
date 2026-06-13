@@ -1,4 +1,20 @@
-function Slider({ label, value, min, max, step = 1, unit = "", onChange }) {
+function Slider({
+  label,
+  value,
+  min,
+  max,
+  step = 1,
+  unit = "",
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step?: number;
+  unit?: string;
+  onChange: (value: number) => void;
+}) {
   return (
     <div style={{ marginBottom: 14 }}>
       <div
