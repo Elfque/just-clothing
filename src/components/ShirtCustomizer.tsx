@@ -10,7 +10,7 @@ import CaptureHelper from "./CaptureHelper";
 const types = ["base", "pattern"];
 
 const ShirtCustomizer = () => {
-  const [captureFn, setCaptureFn] = useState(null);
+  const [captureFn, setCaptureFn] = useState<null | (() => any)>(null);
   const [modelType, setModelType] = useState<"shirt" | "tshirt">("shirt");
   const [color, setColor] = useState(COLORS[8].hex);
   const [patternColor, setPatternColor] = useState(COLORS[4].hex);
