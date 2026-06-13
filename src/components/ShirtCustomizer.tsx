@@ -52,7 +52,7 @@ const ShirtCustomizer = () => {
 
   const handleSaveScreenshot = () => {
     if (!captureFn) return;
-    const dataURL = captureFn();
+    const dataURL: any = captureFn();
     const link = document.createElement("a");
     link.download = `custom-garment-${Date.now()}.png`;
     link.href = dataURL;
