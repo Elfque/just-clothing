@@ -63,7 +63,7 @@ const ShirtCustomizer = () => {
     <div className="h-screen w-screen overflow-hidden grid grid-cols-4">
       <div className="h-screen col-span-3 relative">
         <Canvas>
-          <CaptureHelper onCaptureReady={(fn) => setCaptureFn(() => fn)} />
+          <CaptureHelper onCaptureReady={(fn: any) => setCaptureFn(() => fn)} />
           <MainShirt
             modelType={modelType}
             color={color}

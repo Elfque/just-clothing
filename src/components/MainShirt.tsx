@@ -112,3 +112,7 @@ const MainShirt = ({
 };
 
 export default MainShirt;
+
+useGLTF.preload("/models/shirt.glb");
+useGLTF.preload("/models/t_shirt.glb");
+useGLTF.preload("/models/trousers.glb");
