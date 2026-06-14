@@ -25,12 +25,14 @@ const ShirtCustomizer = () => {
   const [colorTarget, setColorTarget] = useState<string>("base");
   const [trouserColor, setTrouserColor] = useState(COLORS[0].hex);
 
-  const [patternTexture, setPatternTexture] = useState(null);
-  const [patternNormalMap, setPatternNormalMap] = useState(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
+  const [patternTexture, setPatternTexture] = useState<THREE.Texture | null>(
+    null,
+  );
+  const [patternNormalMap, setPatternNormalMap] =
+    useState<THREE.Texture | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<any>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const patternTex = useMemo(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 1024;
@@ -79,11 +81,18 @@ const ShirtCustomizer = () => {
         texture.needsUpdate = true;
         setPatternTexture(texture);
         setColor("#FFFFFF");
-        setUploadedImageUrl(e.target.result);
-        generateNormalMapFromTexture(texture, 1.5, (normalTex) => {
-          setPatternNormalMap(normalTex);
-        });
+        if (e.target) {
+          setUploadedImageUrl(e.target.result);
+        }
+        generateNormalMapFromTexture(
+          texture,
+          1.5,
+          (normalTex: THREE.Texture | null) => {
+            setPatternNormalMap(normalTex);
+          },
+        );
       };
+      if (!e.target || !e.target.result) return;
       img.src = e.target.result as string;
     };
     reader.readAsDataURL(file);

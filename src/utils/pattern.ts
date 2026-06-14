@@ -659,15 +659,17 @@ export function paintPattern(
 // }
 
 export function generateNormalMapFromTexture(
-  texture,
+  texture: THREE.Texture,
   strength = 1.5,
-  onComplete,
+  onComplete: (e: THREE.Texture | null) => void,
 ) {
-  const img = texture.image;
+  const img = texture.image as HTMLImageElement;
+  if (!img) return;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   canvas.width = img.width;
   canvas.height = img.height;
+  if (!ctx) return;
   ctx.drawImage(img, 0, 0);
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
@@ -716,6 +718,7 @@ export function generateNormalMapFromTexture(
   normalCanvas.height = height;
   const normalCtx = normalCanvas.getContext("2d");
   const normalImageData = new ImageData(normalData, width, height);
+  if (!normalCtx) return;
   normalCtx.putImageData(normalImageData, 0, 0);
   const normalTexture = new THREE.CanvasTexture(normalCanvas);
   normalTexture.needsUpdate = true;
