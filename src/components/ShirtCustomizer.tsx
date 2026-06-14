@@ -1,17 +1,20 @@
 import { Canvas } from "@react-three/fiber";
 import MainShirt from "./MainShirt";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import { COLORS, PATTERNS } from "../constants/data";
-import { paintPattern } from "../utils/pattern";
+import { generateNormalMapFromTexture, paintPattern } from "../utils/pattern";
 import * as THREE from "three";
 import Slider from "./Slider";
 import CaptureHelper from "./CaptureHelper";
+import { bottoms, tops } from "../constants/clothes";
+import { MdOutlineFileUpload } from "react-icons/md";
 
-const types = ["base", "pattern"];
+const types = ["base", "pattern", "trouser"];
 
 const ShirtCustomizer = () => {
   const [captureFn, setCaptureFn] = useState<null | (() => any)>(null);
-  const [modelType, setModelType] = useState<"shirt" | "tshirt">("shirt");
+  const [modelType, setModelType] = useState<string>("shirt");
+  const [bottomType, setBottomType] = useState<string>("trouser");
   const [color, setColor] = useState(COLORS[8].hex);
   const [patternColor, setPatternColor] = useState(COLORS[4].hex);
   const [roughness, setRoughness] = useState(0.5);
@@ -21,6 +24,12 @@ const ShirtCustomizer = () => {
   const [patOpacity, setPatOpacity] = useState(100);
   const [colorTarget, setColorTarget] = useState<string>("base");
   const [trouserColor, setTrouserColor] = useState(COLORS[0].hex);
+
+  const [patternTexture, setPatternTexture] = useState(null);
+  const [patternNormalMap, setPatternNormalMap] = useState(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const patternTex = useMemo(() => {
     const canvas = document.createElement("canvas");
@@ -59,9 +68,30 @@ const ShirtCustomizer = () => {
     link.click();
   };
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const texture = new THREE.Texture(img);
+        texture.needsUpdate = true;
+        setPatternTexture(texture);
+        setColor("#FFFFFF");
+        setUploadedImageUrl(e.target.result);
+        generateNormalMapFromTexture(texture, 1.5, (normalTex) => {
+          setPatternNormalMap(normalTex);
+        });
+      };
+      img.src = e.target.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
-    <div className="h-screen w-screen overflow-hidden grid grid-cols-4">
-      <div className="h-screen col-span-3 relative">
+    <div className="h-screen w-screen overflow-hidden grid grid-cols-[1fr_25rem]">
+      <div className="h-screen relative">
         <Canvas>
           <CaptureHelper onCaptureReady={(fn: any) => setCaptureFn(() => fn)} />
           <Suspense>
@@ -71,11 +101,15 @@ const ShirtCustomizer = () => {
               roughness={roughness}
               patternTex={patternTex}
               trouserColor={trouserColor}
+              bottomType={bottomType}
+              patternTexture={patternTexture}
+              patternNormalMap={patternNormalMap}
             />
           </Suspense>
         </Canvas>
+
         <button
-          className="absolute bottom-4 right-4 z-30 text-white"
+          className="absolute bottom-4 right-4 z-30 text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg px-4 py-2 shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
           onClick={handleSaveScreenshot}
         >
           Take Screenshot
@@ -86,44 +120,50 @@ const ShirtCustomizer = () => {
         <section>
           <label className="title-label">Model Type</label>
           <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => setModelType("shirt")}
-              className={`flex items-center justify-center gap-2 py-3 rounded-lg cursor-pointer border-2 transition-all duration-150 ${
-                modelType === "shirt"
-                  ? "border-brand-gold text-brand-gold font-semibold"
-                  : "border-transparent text-gray-400 hover:text-white"
-              }`}
-              style={{
-                background:
-                  modelType === "shirt"
-                    ? "rgba(201,169,110,0.12)"
-                    : "rgba(255,255,255,0.02)",
-              }}
-            >
-              <span className="text-sm">👔</span>
-              <span className="text-xs tracking-wider uppercase font-medium">
-                Shirt
-              </span>
-            </button>
-            <button
-              onClick={() => setModelType("tshirt")}
-              className={`flex items-center justify-center gap-2 py-3 rounded-lg cursor-pointer border-2 transition-all duration-150 ${
-                modelType === "tshirt"
-                  ? "border-brand-gold text-brand-gold font-semibold"
-                  : "border-transparent text-gray-400 hover:text-white"
-              }`}
-              style={{
-                background:
-                  modelType === "tshirt"
-                    ? "rgba(201,169,110,0.12)"
-                    : "rgba(255,255,255,0.02)",
-              }}
-            >
-              <span className="text-sm">👕</span>
-              <span className="text-xs tracking-wider uppercase font-medium">
-                T-Shirt
-              </span>
-            </button>
+            {tops.map((item) => (
+              <button
+                onClick={() => setModelType(item.value)}
+                className={`flex items-center justify-center gap-2 py-3 rounded-lg cursor-pointer border-2 transition-all duration-150 ${
+                  modelType === item.value
+                    ? "border-brand-gold text-brand-gold font-semibold"
+                    : "border-transparent text-gray-400 hover:text-white"
+                }`}
+                style={{
+                  background:
+                    modelType === "shirt"
+                      ? "rgba(201,169,110,0.12)"
+                      : "rgba(255,255,255,0.02)",
+                }}
+              >
+                <span className="text-sm">{item.icon}</span>
+                <span className="text-xs tracking-wider uppercase font-medium">
+                  {item.name}
+                </span>
+              </button>
+            ))}
+
+            {bottoms.map((b) => (
+              <button
+                key={b.value}
+                onClick={() => setBottomType(b.value)}
+                className={`flex items-center justify-center gap-2 py-3 rounded-lg cursor-pointer border-2 transition-all duration-150 ${
+                  bottomType === b.value
+                    ? "border-brand-gold text-brand-gold font-semibold"
+                    : "border-transparent text-gray-400 hover:text-white"
+                }`}
+                style={{
+                  background:
+                    modelType === b.value
+                      ? "rgba(201,169,110,0.12)"
+                      : "rgba(255,255,255,0.02)",
+                }}
+              >
+                <span className="text-sm">{b.icon}</span>
+                <span className="text-xs tracking-wider uppercase font-medium">
+                  {b.name}
+                </span>
+              </button>
+            ))}
           </div>
         </section>
 
@@ -144,7 +184,12 @@ const ShirtCustomizer = () => {
             {PATTERNS.map((p) => (
               <button
                 key={p.id}
-                onClick={() => setPatternId(p.id)}
+                onClick={() => {
+                  setPatternNormalMap(null);
+                  setPatternTexture(null);
+                  setUploadedImageUrl(null);
+                  setPatternId(p.id);
+                }}
                 className={`flex flex-col items-center gap-4 rounded-md cursor-pointer p-2 border-2 transition-all duration-150 ${patternId === p.id ? "border-brand-gold text-brand-gold font-bold" : "border-transparent text-gray-400 font-normal"}`}
                 style={{
                   background:
@@ -157,6 +202,33 @@ const ShirtCustomizer = () => {
                 <span className="text-[10px] tracking-0.04em">{p.label}</span>
               </button>
             ))}
+          </div>
+
+          <div className="rounded-xl border-2 border-gray-500 flex gap-4 items-center h-36 relative border-dashed overflow-hidden mt-6">
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              className="cursor-pointer absolute w-full h-full z-30 opacity-0"
+            />
+            <div className="flex justify-center items-center p-4 relative z-20 w-full h-full text-center bg-black/40">
+              <div>
+                <div className="flex justify-center mb-2">
+                  <MdOutlineFileUpload className="text-gray-300 text-2xl" />
+                </div>
+                <div className="text-xs text-gray-300">
+                  Upload a pattern for your outfit
+                </div>
+              </div>
+            </div>
+            {uploadedImageUrl && (
+              <img
+                src={uploadedImageUrl}
+                alt="pattern preview"
+                className="object-cover absolute w-full h-full"
+              />
+            )}
           </div>
         </section>
 
@@ -176,7 +248,12 @@ const ShirtCustomizer = () => {
                   width: 12,
                   height: 12,
                   borderRadius: 3,
-                  background: t === "base" ? color : patternColor,
+                  background:
+                    t === "base"
+                      ? color
+                      : t === "pattern"
+                        ? patternColor
+                        : trouserColor,
                   border: "0.5px solid rgba(255,255,255,0.2)",
                 }}
               />
@@ -186,24 +263,35 @@ const ShirtCustomizer = () => {
         </div>
 
         <div className="grid grid-cols-6 gap-2">
-          {COLORS.map((c) => (
-            <button
-              key={c.id}
-              onClick={() =>
-                colorTarget === "base"
-                  ? setColor(c.hex)
-                  : setPatternColor(c.hex)
-              }
-              title={c.label}
-              className={`w-full rounded-md cursor-pointer outline-0 ${color === c.hex ? "border-brand-gold" : "border-transparent"} border-2`}
-              style={{
-                aspectRatio: "1",
-                background: c.hex,
-                transform: color === c.id ? "scale(1.12)" : "scale(1)",
-                transition: "transform 0.15s,border 0.15s",
-              }}
-            />
-          ))}
+          {COLORS.map((c) => {
+            const currSet =
+              colorTarget === "base"
+                ? setColor
+                : colorTarget === "pattern"
+                  ? setPatternColor
+                  : setTrouserColor;
+            const currentColor =
+              colorTarget === "base"
+                ? color
+                : colorTarget === "pattern"
+                  ? patternColor
+                  : trouserColor;
+            return (
+              <button
+                key={c.id}
+                onClick={() => currSet(c.hex)}
+                title={c.label}
+                className={`w-full rounded-md cursor-pointer outline-0 ${currentColor === c.hex ? "border-brand-gold" : "border-transparent"} border-2`}
+                style={{
+                  aspectRatio: "1",
+                  background: c.hex,
+                  transform:
+                    currentColor === c.hex ? "scale(1.12)" : "scale(1)",
+                  transition: "transform 0.15s,border 0.15s",
+                }}
+              />
+            );
+          })}
         </div>
 
         {patternId !== "none" && (
@@ -249,27 +337,6 @@ const ShirtCustomizer = () => {
             />
           </section>
         )}
-
-        <section>
-          <label className="title-label">Trouser Color</label>
-          <div className="grid grid-cols-6 gap-2">
-            {COLORS.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setTrouserColor(c.hex)}
-                title={c.label}
-                className={`w-full rounded-md cursor-pointer outline-0 ${trouserColor === c.hex ? "border-brand-gold" : "border-transparent"} border-2`}
-                style={{
-                  aspectRatio: "1",
-                  background: c.hex,
-                  transform:
-                    trouserColor === c.hex ? "scale(1.12)" : "scale(1)",
-                  transition: "transform 0.15s,border 0.15s",
-                }}
-              />
-            ))}
-          </div>
-        </section>
       </div>
     </div>
   );

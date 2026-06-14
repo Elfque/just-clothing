@@ -1,3 +1,5 @@
+import * as THREE from "three";
+
 // Helper: shift color (lighten/darken)
 function shiftColor(hex: string, percent: number) {
   // Simple implementation: lighten/darken by percent (negative for darker)
@@ -586,4 +588,136 @@ export function paintPattern(
   }
 
   ctx.restore();
+}
+
+// export function generateNormalMapFromTexture(
+//   texture: THREE.Texture,
+//   onComplete: (texture: THREE.Texture) => void,
+// ) {
+//   const img = texture.image as HTMLImageElement;
+//   const canvas = document.createElement("canvas");
+//   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+//   canvas.width = img.width;
+//   canvas.height = img.height;
+//   ctx.drawImage(img, 0, 0);
+//   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+//   const data = imageData.data;
+
+//   // Convert to grayscale first
+//   const grayscale = new Array(canvas.width * canvas.height);
+//   for (let i = 0; i < data.length; i += 4) {
+//     const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+//     grayscale[i / 4] = gray / 255; // 0..1
+//   }
+
+//   // Sobel operator
+//   const width = canvas.width;
+//   const height = canvas.height;
+//   const normalMapData = new Uint8Array(width * height * 4);
+
+//   for (let y = 1; y < height - 1; y++) {
+//     for (let x = 1; x < width - 1; x++) {
+//       const idx = y * width + x;
+//       const gx =
+//         -grayscale[idx - width - 1] +
+//         grayscale[idx - width + 1] +
+//         -2 * grayscale[idx - 1] +
+//         2 * grayscale[idx + 1] +
+//         -grayscale[idx + width - 1] +
+//         grayscale[idx + width + 1];
+//       const gy =
+//         -grayscale[idx - width - 1] -
+//         2 * grayscale[idx - width] -
+//         grayscale[idx - width + 1] +
+//         grayscale[idx + width - 1] +
+//         2 * grayscale[idx + width] +
+//         grayscale[idx + width + 1];
+//       const gz = 1.0;
+//       let len = Math.hypot(gx, gy, gz);
+//       if (len === 0) len = 1;
+//       const nx = gx / len;
+//       const ny = gy / len;
+//       const nz = gz / len;
+//       // Convert from [-1,1] to [0,255]
+//       normalMapData[idx * 4 + 0] = Math.floor((nx + 1) * 0.5 * 255);
+//       normalMapData[idx * 4 + 1] = Math.floor((ny + 1) * 0.5 * 255);
+//       normalMapData[idx * 4 + 2] = Math.floor((nz + 1) * 0.5 * 255);
+//       normalMapData[idx * 4 + 3] = 255;
+//     }
+//   }
+
+//   const normalCanvas = document.createElement("canvas");
+//   normalCanvas.width = width;
+//   normalCanvas.height = height;
+//   const normalCtx = normalCanvas.getContext("2d");
+//   const normalImageData = new ImageData(normalMapData as any, width, height);
+//   normalCtx.putImageData(normalImageData, 0, 0);
+
+//   const normalTexture = new THREE.CanvasTexture(normalCanvas);
+//   normalTexture.needsUpdate = true;
+//   onComplete(normalTexture);
+// }
+
+export function generateNormalMapFromTexture(
+  texture,
+  strength = 1.5,
+  onComplete,
+) {
+  const img = texture.image;
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = img.width;
+  canvas.height = img.height;
+  ctx.drawImage(img, 0, 0);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  const width = canvas.width;
+  const height = canvas.height;
+  const grayscale = new Float32Array(width * height);
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    grayscale[i / 4] = gray / 255;
+  }
+
+  const normalData = new Uint8ClampedArray(width * height * 4);
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const idx = y * width + x;
+      const gx =
+        -grayscale[idx - width - 1] +
+        grayscale[idx - width + 1] +
+        -2 * grayscale[idx - 1] +
+        2 * grayscale[idx + 1] +
+        -grayscale[idx + width - 1] +
+        grayscale[idx + width + 1];
+      const gy =
+        -grayscale[idx - width - 1] -
+        2 * grayscale[idx - width] -
+        grayscale[idx - width + 1] +
+        grayscale[idx + width - 1] +
+        2 * grayscale[idx + width] +
+        grayscale[idx + width + 1];
+      const gz = 1.0;
+      let len = Math.hypot(gx * strength, gy * strength, gz);
+      if (len === 0) len = 1;
+      const nx = (gx * strength) / len;
+      const ny = (gy * strength) / len;
+      const nz = gz / len;
+      normalData[idx * 4] = Math.floor((nx + 1) * 0.5 * 255);
+      normalData[idx * 4 + 1] = Math.floor((ny + 1) * 0.5 * 255);
+      normalData[idx * 4 + 2] = Math.floor((nz + 1) * 0.5 * 255);
+      normalData[idx * 4 + 3] = 255;
+    }
+  }
+
+  const normalCanvas = document.createElement("canvas");
+  normalCanvas.width = width;
+  normalCanvas.height = height;
+  const normalCtx = normalCanvas.getContext("2d");
+  const normalImageData = new ImageData(normalData, width, height);
+  normalCtx.putImageData(normalImageData, 0, 0);
+  const normalTexture = new THREE.CanvasTexture(normalCanvas);
+  normalTexture.needsUpdate = true;
+  onComplete(normalTexture);
 }
