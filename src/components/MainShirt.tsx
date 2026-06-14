@@ -119,9 +119,9 @@ const MainShirt = ({
 
         <primitive
           object={activeBottom}
-          scale={bottomType === "short" ? 0.06 : 4.5}
+          scale={bottomType === "short" ? 0.9 : 4.5}
           position={
-            bottomType === "short" ? [0.1, -1.9, 0.13] : [0.1, -6.2, 0.13]
+            bottomType === "short" ? [0.1, -1.5, 0.13] : [0.1, -6.2, 0.13]
           }
         />
       </group>
