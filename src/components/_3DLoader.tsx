@@ -80,9 +80,8 @@ const _3DLoader = () => {
   const [loadProgress, setLoadProgress] = useState(0);
 
   useEffect(() => {
-    let interval;
     let progress = 0;
-    interval = setInterval(() => {
+    const interval: ReturnType<typeof setInterval> = setInterval(() => {
       progress += Math.random() * 8 + 3;
       if (progress >= 100) {
         progress = 100;
