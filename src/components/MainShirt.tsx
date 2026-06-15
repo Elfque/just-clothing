@@ -105,7 +105,6 @@ const MainShirt = ({
 
   return (
     <>
-      <color attach="background" args={["#0d0c10"]} />
       <OrbitControls enablePan={false} enableZoom={true} />
       <ambientLight intensity={1} />
       <directionalLight position={[5, 5, 5]} intensity={4} />

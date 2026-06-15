@@ -8,6 +8,7 @@ import Slider from "./Slider";
 import CaptureHelper from "./CaptureHelper";
 import { bottoms, tops } from "../constants/clothes";
 import { MdOutlineFileUpload } from "react-icons/md";
+import _3DLoader from "./_3DLoader";
 
 const types = ["base", "pattern", "trouser"];
 
@@ -102,8 +103,9 @@ const ShirtCustomizer = () => {
     <div className="h-screen w-screen overflow-hidden grid grid-cols-[1fr_25rem]">
       <div className="h-screen relative">
         <Canvas>
+          <color attach="background" args={["#0d0c10"]} />
           <CaptureHelper onCaptureReady={(fn: any) => setCaptureFn(() => fn)} />
-          <Suspense>
+          <Suspense fallback={<_3DLoader />}>
             <MainShirt
               modelType={modelType}
               color={color}
