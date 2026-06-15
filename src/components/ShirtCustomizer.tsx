@@ -101,7 +101,7 @@ const ShirtCustomizer = () => {
 
   return (
     <div className="h-screen w-screen overflow-hidden grid grid-cols-[1fr_25rem]">
-      <div className="h-screen relative">
+      <div className="h-screen relative bg-[#0d0c10]">
         <Canvas>
           <color attach="background" args={["#0d0c10"]} />
           <CaptureHelper onCaptureReady={(fn: any) => setCaptureFn(() => fn)} />
