@@ -98,7 +98,7 @@ const _3DLoader = () => {
         enableDamping
         dampingFactor={0.05}
         autoRotate={false}
-        enableZoom
+        enableZoom={false}
         enablePan={false}
       />
       <ambientLight intensity={0.5} />

@@ -105,11 +105,11 @@ const MainShirt = ({
 
   return (
     <>
-      <OrbitControls enablePan={false} enableZoom={true} />
+      <OrbitControls enablePan={false} enableZoom={false} />
       <ambientLight intensity={1} />
       <directionalLight position={[5, 5, 5]} intensity={4} />
 
-      <group position={[0, 1, 0]} scale={0.9}>
+      <group position={[0, 1, 0]} scale={0.8}>
         <primitive
           object={activeScene}
           scale={4.5}
